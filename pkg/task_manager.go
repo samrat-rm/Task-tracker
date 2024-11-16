@@ -9,7 +9,7 @@ import (
 
 type TaskManager struct {
 	tasks       map[int64]Task
-	taskStorage TaskStorageStruct
+	taskStorage *TaskStorageStruct
 }
 
 func (tm *TaskManager) CreateTask(description string) (int64, error) {
