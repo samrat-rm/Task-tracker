@@ -74,6 +74,36 @@ func TestTaskManager(t *testing.T) {
 		}
 	}
 
+	allTasks := testGetAllTasks(t, tm)
+	if len(allTasks) != len(tasks) {
+		t.Errorf("expected %d tasks, got %d", len(tasks), len(allTasks))
+	}
+
+	for _, task := range allTasks {
+		if _, exists := tasks[task.Id]; !exists {
+			t.Errorf("unexpected task found: %+v", task)
+		}
+	}
+
+	//
+	statusToFetch := Status(1)
+	filteredTasks := testGetTasksByStatus(t, tm, statusToFetch)
+	expectedCount := 0
+	for _, task := range tasks {
+		if task.Status == statusToFetch {
+			expectedCount++
+		}
+	}
+
+	if len(filteredTasks) != expectedCount {
+		t.Errorf("expected %d tasks with status %d, got %d", expectedCount, statusToFetch, len(filteredTasks))
+	}
+
+	for _, task := range filteredTasks {
+		if task.Status != statusToFetch {
+			t.Errorf("unexpected task with status %d found: %+v", task.Status, task)
+		}
+	}
 }
 
 func testCreateTask(t *testing.T, tm *TaskManager, tempFileName string) int64 {
@@ -142,6 +172,24 @@ func testUpdateTaskStatus(t *testing.T, tm *TaskManager, tempFileName string, id
 			}
 		}
 	}
+}
+
+func testGetAllTasks(t *testing.T, tm *TaskManager) []Task {
+	allTasks, err := tm.GetAllTasks()
+	if err != nil {
+		t.Errorf("GetAllTasks returned an error: %v", err)
+	}
+	return allTasks
+}
+
+func testGetTasksByStatus(t *testing.T, tm *TaskManager, statusToFetch Status) []Task {
+
+	filteredTasks, err := tm.GetTasksByStatus(statusToFetch)
+	if err != nil {
+		t.Errorf("GetTasksByStatus returned an error: %v", err)
+	}
+
+	return filteredTasks
 }
 
 func getTasksFromJsonFile(t *testing.T, tempFileName string) []Task {
