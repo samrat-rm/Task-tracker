@@ -7,6 +7,12 @@ import (
 	"github.com/samrat-rm/task_tracker/utils"
 )
 
+var statusToString = map[Status]string{
+	NotStarted: "NotStarted",
+	InProgress: "InProgress",
+	Completed:  "Completed",
+}
+
 type TaskManager struct {
 	tasks       map[int64]Task
 	taskStorage *TaskStorageStruct
@@ -73,4 +79,28 @@ func (tm *TaskManager) UpdateTaskDescription(id int64, description string) error
 		return fmt.Errorf("failed to save task after description update: %w", err)
 	}
 	return nil
+}
+
+func (tm *TaskManager) GetAllTasks() ([]Task, error) {
+	tasks := []Task{}
+	for _, task := range tm.tasks {
+		tasks = append(tasks, task)
+	}
+	if len(tasks) == 0 {
+		return []Task{}, fmt.Errorf("no task found in the JSON file path %s ", tm.taskStorage.filePath)
+	}
+	return tasks, nil
+}
+
+func (tm *TaskManager) GetTasksByStatus(status Status) ([]Task, error) {
+	tasks := []Task{}
+	for _, task := range tm.tasks {
+		if task.Status == status {
+			tasks = append(tasks, task)
+		}
+	}
+	if len(tasks) == 0 {
+		return []Task{}, fmt.Errorf("no task with the %s status found in the JSON file path %s ", statusToString[status], tm.taskStorage.filePath)
+	}
+	return tasks, nil
 }
