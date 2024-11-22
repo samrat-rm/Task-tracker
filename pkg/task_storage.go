@@ -16,26 +16,36 @@ type TaskStorageStruct struct {
 	filePath string
 }
 
-// FetchTasksFromJson reads tasks from a JSON file and returns them as a map.
 func (t *TaskStorageStruct) FetchTasksFromJson() (map[int64]Task, error) {
-	file, err := os.Open(t.filePath)
+
+	file, err := os.OpenFile(t.filePath, os.O_RDWR|os.O_CREATE, 0644)
+	taskMap := make(map[int64]Task)
+
 	if err != nil {
-		return nil, fmt.Errorf("could not open file %s: %v", t.filePath, err)
+		return taskMap, fmt.Errorf("could not open file %s: %v", t.filePath, err)
 	}
 	defer file.Close()
 
+	// Check if the file is empty
+	stat, err := file.Stat()
+	if err != nil {
+		return taskMap, fmt.Errorf("could not get file stats %s: %v", t.filePath, err)
+	}
+	if stat.Size() == 0 {
+		return taskMap, nil
+	}
+
 	fileContent, err := io.ReadAll(file)
 	if err != nil {
-		return nil, fmt.Errorf("could not read file %s: %v", t.filePath, err)
+		return taskMap, fmt.Errorf("could not read file %s: %v]", t.filePath, err)
 	}
 
 	var tasks []Task
 	err = json.Unmarshal(fileContent, &tasks)
 	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal JSON: %v", err)
+		return taskMap, fmt.Errorf("could not unmarshal JSON: %v", err)
 	}
 
-	taskMap := make(map[int64]Task)
 	for _, task := range tasks {
 		taskMap[task.Id] = task
 	}
@@ -43,21 +53,17 @@ func (t *TaskStorageStruct) FetchTasksFromJson() (map[int64]Task, error) {
 	return taskMap, nil
 }
 
-// SaveTasksToJson saves a map of tasks into a JSON file.
 func (t *TaskStorageStruct) SaveTasksToJson(tasks map[int64]Task) error {
-	// Convert the map of tasks into a slice
 	var taskList []Task
 	for _, task := range tasks {
 		taskList = append(taskList, task)
 	}
 
-	// Marshal the tasks to JSON
 	fileContent, err := json.MarshalIndent(taskList, "", "  ")
 	if err != nil {
 		return fmt.Errorf("could not marshal tasks: %v", err)
 	}
 
-	// Write the JSON content to the file
 	err = os.WriteFile(t.filePath, fileContent, 0644)
 	if err != nil {
 		return fmt.Errorf("could not write to file %s: %v", t.filePath, err)
