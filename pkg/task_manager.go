@@ -104,3 +104,18 @@ func (tm *TaskManager) GetTasksByStatus(status Status) ([]Task, error) {
 	}
 	return tasks, nil
 }
+
+func InitTaskManager(filePath string) *TaskManager {
+	ts := &TaskStorageStruct{
+		filePath: filePath,
+	}
+	tasks, err := ts.FetchTasksFromJson()
+	if err != nil {
+		fmt.Printf("Failed to get Json data from %s file path, %s", filePath, err)
+	}
+
+	return &TaskManager{
+		tasks:       tasks,
+		taskStorage: ts,
+	}
+}
