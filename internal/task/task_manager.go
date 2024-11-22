@@ -14,8 +14,8 @@ var statusToString = map[Status]string{
 }
 
 type TaskManager struct {
-	tasks       map[int64]Task
-	taskStorage *TaskStorageStruct
+	Tasks       map[int64]Task
+	TaskStorage *TaskStorageStruct
 }
 
 func (tm *TaskManager) CreateTask(description string) (int64, error) {
@@ -27,8 +27,8 @@ func (tm *TaskManager) CreateTask(description string) (int64, error) {
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}
-	tm.tasks[id] = task
-	err := tm.taskStorage.SaveTasksToJson(tm.tasks)
+	tm.Tasks[id] = task
+	err := tm.TaskStorage.SaveTasksToJson(tm.Tasks)
 	if err != nil {
 		return 0, fmt.Errorf("failed to save new Task %w", err)
 	}
@@ -36,13 +36,13 @@ func (tm *TaskManager) CreateTask(description string) (int64, error) {
 }
 
 func (tm *TaskManager) UpdateTaskStatus(id int64, status Status) error {
-	val, ok := tm.tasks[id]
+	val, ok := tm.Tasks[id]
 	if !ok {
 		return fmt.Errorf("update status failed for task with ID: %d", id)
 	}
 	val.Status = status
-	tm.tasks[id] = val
-	err := tm.taskStorage.SaveTasksToJson(tm.tasks)
+	tm.Tasks[id] = val
+	err := tm.TaskStorage.SaveTasksToJson(tm.Tasks)
 	if err != nil {
 		return fmt.Errorf("failed to save new Task %w", err)
 	}
@@ -50,14 +50,14 @@ func (tm *TaskManager) UpdateTaskStatus(id int64, status Status) error {
 }
 
 func (tm *TaskManager) DeleteTask(id int64) error {
-	_, ok := tm.tasks[id]
+	_, ok := tm.Tasks[id]
 	if !ok {
 		return fmt.Errorf("task with ID %d not found", id)
 	}
 
-	delete(tm.tasks, id)
+	delete(tm.Tasks, id)
 
-	err := tm.taskStorage.SaveTasksToJson(tm.tasks)
+	err := tm.TaskStorage.SaveTasksToJson(tm.Tasks)
 	if err != nil {
 		return fmt.Errorf("failed to save after task deletion: %w", err)
 	}
@@ -65,16 +65,16 @@ func (tm *TaskManager) DeleteTask(id int64) error {
 }
 
 func (tm *TaskManager) UpdateTaskDescription(id int64, description string) error {
-	task, ok := tm.tasks[id]
+	task, ok := tm.Tasks[id]
 	if !ok {
 		return fmt.Errorf("task with ID %d not found", id)
 	}
 
 	task.Description = description
 	task.UpdatedAt = time.Now()
-	tm.tasks[id] = task
+	tm.Tasks[id] = task
 
-	err := tm.taskStorage.SaveTasksToJson(tm.tasks)
+	err := tm.TaskStorage.SaveTasksToJson(tm.Tasks)
 	if err != nil {
 		return fmt.Errorf("failed to save task after description update: %w", err)
 	}
@@ -83,31 +83,31 @@ func (tm *TaskManager) UpdateTaskDescription(id int64, description string) error
 
 func (tm *TaskManager) GetAllTasks() ([]Task, error) {
 	tasks := []Task{}
-	for _, task := range tm.tasks {
+	for _, task := range tm.Tasks {
 		tasks = append(tasks, task)
 	}
 	if len(tasks) == 0 {
-		return []Task{}, fmt.Errorf("no task found in the JSON file path %s ", tm.taskStorage.filePath)
+		return []Task{}, fmt.Errorf("no task found in the JSON file path %s ", tm.TaskStorage.FilePath)
 	}
 	return tasks, nil
 }
 
 func (tm *TaskManager) GetTasksByStatus(status Status) ([]Task, error) {
 	tasks := []Task{}
-	for _, task := range tm.tasks {
+	for _, task := range tm.Tasks {
 		if task.Status == status {
 			tasks = append(tasks, task)
 		}
 	}
 	if len(tasks) == 0 {
-		return []Task{}, fmt.Errorf("no task with the %s status found in the JSON file path %s ", statusToString[status], tm.taskStorage.filePath)
+		return []Task{}, fmt.Errorf("no task with the %s status found in the JSON file path %s ", statusToString[status], tm.TaskStorage.FilePath)
 	}
 	return tasks, nil
 }
 
 func InitTaskManager(filePath string) *TaskManager {
 	ts := &TaskStorageStruct{
-		filePath: filePath,
+		FilePath: filePath,
 	}
 	tasks, err := ts.FetchTasksFromJson()
 	if err != nil {
@@ -115,7 +115,7 @@ func InitTaskManager(filePath string) *TaskManager {
 	}
 
 	return &TaskManager{
-		tasks:       tasks,
-		taskStorage: ts,
+		Tasks:       tasks,
+		TaskStorage: ts,
 	}
 }

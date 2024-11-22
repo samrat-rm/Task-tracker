@@ -6,11 +6,11 @@ import (
 	"os"
 	"strconv"
 
-	task "github.com/samrat-rm/task_tracker/pkg"
+	task "github.com/samrat-rm/task_tracker/internal/task"
 )
 
 const taskCLI = "./task-cli"
-const filePath = "./data.json"
+const filePath = "data/data.json"
 
 func main() {
 

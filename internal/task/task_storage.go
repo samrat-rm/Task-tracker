@@ -13,23 +13,23 @@ type TaskStorage interface {
 }
 
 type TaskStorageStruct struct {
-	filePath string
+	FilePath string
 }
 
 func (t *TaskStorageStruct) FetchTasksFromJson() (map[int64]Task, error) {
 
-	file, err := os.OpenFile(t.filePath, os.O_RDWR|os.O_CREATE, 0644)
+	file, err := os.OpenFile(t.FilePath, os.O_RDWR|os.O_CREATE, 0644)
 	taskMap := make(map[int64]Task)
 
 	if err != nil {
-		return taskMap, fmt.Errorf("could not open file %s: %v", t.filePath, err)
+		return taskMap, fmt.Errorf("could not open file %s: %v", t.FilePath, err)
 	}
 	defer file.Close()
 
 	// Check if the file is empty
 	stat, err := file.Stat()
 	if err != nil {
-		return taskMap, fmt.Errorf("could not get file stats %s: %v", t.filePath, err)
+		return taskMap, fmt.Errorf("could not get file stats %s: %v", t.FilePath, err)
 	}
 	if stat.Size() == 0 {
 		return taskMap, nil
@@ -37,7 +37,7 @@ func (t *TaskStorageStruct) FetchTasksFromJson() (map[int64]Task, error) {
 
 	fileContent, err := io.ReadAll(file)
 	if err != nil {
-		return taskMap, fmt.Errorf("could not read file %s: %v]", t.filePath, err)
+		return taskMap, fmt.Errorf("could not read file %s: %v]", t.FilePath, err)
 	}
 
 	var tasks []Task
@@ -64,9 +64,9 @@ func (t *TaskStorageStruct) SaveTasksToJson(tasks map[int64]Task) error {
 		return fmt.Errorf("could not marshal tasks: %v", err)
 	}
 
-	err = os.WriteFile(t.filePath, fileContent, 0644)
+	err = os.WriteFile(t.FilePath, fileContent, 0644)
 	if err != nil {
-		return fmt.Errorf("could not write to file %s: %v", t.filePath, err)
+		return fmt.Errorf("could not write to file %s: %v", t.FilePath, err)
 	}
 
 	return nil

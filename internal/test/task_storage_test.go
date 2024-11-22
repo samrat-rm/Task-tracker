@@ -1,10 +1,12 @@
-package task
+package task_test
 
 import (
 	"encoding/json"
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/samrat-rm/task_tracker/internal/task"
 )
 
 func TestFetchTasksFromJson(t *testing.T) {
@@ -22,7 +24,7 @@ func TestFetchTasksFromJson(t *testing.T) {
 	}
 	tmpFile.Close()
 
-	ts := &TaskStorageStruct{filePath: tmpFile.Name()}
+	ts := &task.TaskStorageStruct{FilePath: tmpFile.Name()}
 
 	tasks, err := ts.FetchTasksFromJson()
 	if err != nil {
@@ -41,9 +43,9 @@ func TestSaveTasksToJson(t *testing.T) {
 	}
 	defer os.Remove(tmpFile.Name())
 
-	ts := &TaskStorageStruct{filePath: tmpFile.Name()}
+	ts := &task.TaskStorageStruct{FilePath: tmpFile.Name()}
 
-	tasks := map[int64]Task{
+	tasks := map[int64]task.Task{
 		1: {Id: 1, Description: "Test Task", Status: 1},
 	}
 
@@ -57,11 +59,11 @@ func TestSaveTasksToJson(t *testing.T) {
 		t.Fatalf("failed to read temp file: %v", err)
 	}
 
-	expected := []Task{
+	expected := []task.Task{
 		{Id: 1, Description: "Test Task", Status: 1},
 	}
 
-	var actual []Task
+	var actual []task.Task
 	err = json.Unmarshal(content, &actual)
 	if err != nil {
 		t.Fatalf("failed to unmarshal JSON content: %v", err)

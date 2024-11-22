@@ -1,9 +1,11 @@
-package task
+package task_test
 
 import (
 	"encoding/json"
 	"os"
 	"testing"
+
+	"github.com/samrat-rm/task_tracker/internal/task"
 )
 
 func TestTaskManager(t *testing.T) {
@@ -13,21 +15,21 @@ func TestTaskManager(t *testing.T) {
 	}
 	defer os.Remove(tmpFile.Name())
 
-	tasks := map[int64]Task{
+	tasks := map[int64]task.Task{
 		1: {Id: 1, Description: "Test Task", Status: 1},
 		2: {Id: 2, Description: "Test Task 2", Status: 2},
 	}
 
-	ts := &TaskStorageStruct{filePath: tmpFile.Name()}
+	ts := &task.TaskStorageStruct{FilePath: tmpFile.Name()}
 
 	err = ts.SaveTasksToJson(tasks)
 	if err != nil {
 		t.Errorf("SaveTasksToJson returned an error: %v", err)
 	}
 
-	tm := &TaskManager{
-		taskStorage: ts,
-		tasks:       tasks,
+	tm := &task.TaskManager{
+		TaskStorage: ts,
+		Tasks:       tasks,
 	}
 
 	createTaskId := testCreateTask(t, tm, tmpFile.Name())
@@ -64,7 +66,7 @@ func TestTaskManager(t *testing.T) {
 		}
 	}
 
-	const updateStatus Status = 1
+	const updateStatus task.Status = 1
 	testUpdateTaskStatus(t, tm, tmpFile.Name(), updateTaskId, updateStatus)
 	for _, task := range tasks {
 		if task.Id == updateTaskId {
@@ -86,7 +88,7 @@ func TestTaskManager(t *testing.T) {
 	}
 
 	//
-	statusToFetch := Status(1)
+	statusToFetch := task.Status(1)
 	filteredTasks := testGetTasksByStatus(t, tm, statusToFetch)
 	expectedCount := 0
 	for _, task := range tasks {
@@ -106,7 +108,7 @@ func TestTaskManager(t *testing.T) {
 	}
 }
 
-func testCreateTask(t *testing.T, tm *TaskManager, tempFileName string) int64 {
+func testCreateTask(t *testing.T, tm *task.TaskManager, tempFileName string) int64 {
 
 	id, err := tm.CreateTask("new task")
 	if err != nil {
@@ -127,7 +129,7 @@ func testCreateTask(t *testing.T, tm *TaskManager, tempFileName string) int64 {
 	return id
 }
 
-func testDeleteTask(t *testing.T, tm *TaskManager, tempFileName string, deleteTaskId int64) {
+func testDeleteTask(t *testing.T, tm *task.TaskManager, tempFileName string, deleteTaskId int64) {
 
 	err := tm.DeleteTask(deleteTaskId)
 	if err != nil {
@@ -143,7 +145,7 @@ func testDeleteTask(t *testing.T, tm *TaskManager, tempFileName string, deleteTa
 	}
 }
 
-func testUpdateTaskDescription(t *testing.T, tm *TaskManager, tempFileName string, id int64, description string) {
+func testUpdateTaskDescription(t *testing.T, tm *task.TaskManager, tempFileName string, id int64, description string) {
 	err := tm.UpdateTaskDescription(id, description)
 	if err != nil {
 		t.Errorf("failed to update task with Id %d", id)
@@ -159,7 +161,7 @@ func testUpdateTaskDescription(t *testing.T, tm *TaskManager, tempFileName strin
 	}
 }
 
-func testUpdateTaskStatus(t *testing.T, tm *TaskManager, tempFileName string, id int64, status Status) {
+func testUpdateTaskStatus(t *testing.T, tm *task.TaskManager, tempFileName string, id int64, status task.Status) {
 	err := tm.UpdateTaskStatus(id, status)
 	if err != nil {
 		t.Errorf("failed to update task status with Id %d", id)
@@ -174,7 +176,7 @@ func testUpdateTaskStatus(t *testing.T, tm *TaskManager, tempFileName string, id
 	}
 }
 
-func testGetAllTasks(t *testing.T, tm *TaskManager) []Task {
+func testGetAllTasks(t *testing.T, tm *task.TaskManager) []task.Task {
 	allTasks, err := tm.GetAllTasks()
 	if err != nil {
 		t.Errorf("GetAllTasks returned an error: %v", err)
@@ -182,7 +184,7 @@ func testGetAllTasks(t *testing.T, tm *TaskManager) []Task {
 	return allTasks
 }
 
-func testGetTasksByStatus(t *testing.T, tm *TaskManager, statusToFetch Status) []Task {
+func testGetTasksByStatus(t *testing.T, tm *task.TaskManager, statusToFetch task.Status) []task.Task {
 
 	filteredTasks, err := tm.GetTasksByStatus(statusToFetch)
 	if err != nil {
@@ -192,13 +194,13 @@ func testGetTasksByStatus(t *testing.T, tm *TaskManager, statusToFetch Status) [
 	return filteredTasks
 }
 
-func getTasksFromJsonFile(t *testing.T, tempFileName string) []Task {
+func getTasksFromJsonFile(t *testing.T, tempFileName string) []task.Task {
 	content, err := os.ReadFile(tempFileName)
 	if err != nil {
 		t.Fatalf("failed to read temp file: %v", err)
 	}
 
-	var actual []Task
+	var actual []task.Task
 	err = json.Unmarshal(content, &actual)
 	if err != nil {
 		t.Fatalf("failed to unmarshal JSON content: %v", err)
