@@ -7,6 +7,7 @@ A robust command-line application built in Golang for managing tasks. This tool 
 ### Roadmap Project Challenge
 
 This project was developed as part of the Task Tracker Challenge from Roadmap.sh, designed to enhance skills in building practical applications.
+
 ---
 
 ## Key Features
